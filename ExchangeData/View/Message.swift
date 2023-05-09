@@ -50,11 +50,17 @@ struct Message: View {
             Button {
                 switch typeSelected {
                 case .normal:
-                    viewModel.sendMessage()
+                    viewModel.sendMessage(
+                        session: viewModel.session,
+                        message: viewModel.messaggio)
                 case .shelve:
-                    viewModel.sendMessageType1()
+                    viewModel.sendMessageType1(
+                        session: viewModel.session,
+                        message: viewModel.messaggio)
                 case .background:
-                    viewModel.sendMessageType2()
+                    viewModel.sendMessageType2(
+                        session: viewModel.session,
+                        message: viewModel.messaggio)
                 }
             } label: {
                 Text("Invia")

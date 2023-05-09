@@ -1,32 +1,33 @@
 //
 //  ViewModel.swift
-//  ExchangeData
+//  ExchangeData Watch App
 //
 //  Created by Michele Manniello on 29/04/23.
 //
 
 import Foundation
-
+import UIKit
 import WatchConnectivity
 
-final class ViewModel: NSObject, ObservableObject, WCSessionDelegate, SendOperation {
+
+final class WatchViewModel: NSObject, ObservableObject, WCSessionDelegate, SendOperation {
     
-    @Published var messaggio: String = ""
-    @Published var response: String = ""
+    @Published var response = ""
+    @Published var message = ""
     @Published var files: [URL] = []
     @Published var contatore: Contatore = Contatore()
-    
-    var session: WCSession?
     
     var online: Bool {
         guard let session = self.session else { return false }
         return session.isReachable
     }
     
-    init(request: String = "", response: String = "") {
+    var session: WCSession?
+    
+    init(response: String = "", message: String = "") {
         super.init()
-        self.messaggio = request
         self.response = response
+        self.message = message
         if WCSession.isSupported() {
             self.session = .default
             self.session?.delegate = self
@@ -34,19 +35,8 @@ final class ViewModel: NSObject, ObservableObject, WCSessionDelegate, SendOperat
         }
     }
     
-    func sessionDidBecomeInactive(_ session: WCSession) {
-        self.session = session
-    }
-    
-    func sessionDidDeactivate(_ session: WCSession) {
-        self.session = session
-    }
-    
-    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
-    }
-    
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
-        
+        print(message)
         DispatchQueue.main.async {
             self.response = message["Messaggio"] as? String ?? ""
         }
@@ -58,16 +48,33 @@ final class ViewModel: NSObject, ObservableObject, WCSessionDelegate, SendOperat
         }
     }
     
-    //    MARK: messaggi in background
-    func sendMessageType2() {
-        guard let session = self.session else { return }
-        sendMessageType2(session: session, message: messaggio)
-        
-    }
-    
     func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any] = [:]) {
         DispatchQueue.main.async {
             self.response = userInfo["Messaggio"] as? String ?? ""
+        }
+    }
+    
+    func session(_ session: WCSession, didReceive file: WCSessionFile) {
+        let url = file.fileURL
+        
+        DispatchQueue.main.async {
+            
+            let filemanager = FileManager.default
+            guard let docuentDirectory = filemanager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+                print("Directory non trovata")
+                return
+            }
+            
+            let fileURL = docuentDirectory.appending(path: "text\(self.files.count).pdf")
+            do {
+                let messageData = try Data(contentsOf: url)
+                try messageData.write(to: fileURL,options: .atomic)
+                
+                self.files.append(fileURL)
+                print("Succes")
+            } catch {
+                print("Error")
+            }
         }
     }
     
@@ -81,13 +88,7 @@ final class ViewModel: NSObject, ObservableObject, WCSessionDelegate, SendOperat
         }
     }
     
-    func session(_ session: WCSession, didReceive file: WCSessionFile) {
-        let url = file.fileURL
-        print(url.lastPathComponent)
-        print(url)
-        DispatchQueue.main.async {
-            self.response = url.absoluteString
-            self.files.append(url)
-        }
+    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+        
     }
 }

@@ -37,7 +37,8 @@ struct ContentView: View {
                 Counter()
                     .environmentObject(viewModel)
             case .pdf:
-                Text("")
+               PDFSWIView()
+                    .environmentObject(viewModel)
             }
         } label: {
             HStack(alignment: .center){

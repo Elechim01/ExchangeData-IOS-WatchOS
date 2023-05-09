@@ -10,9 +10,7 @@ import Foundation
 enum Options: String, CaseIterable {
     case message = "Mesaggio"
     case counter = "Contatore"
-#if os(iOS)
     case pdf = "PDF"
-#endif
     
     public static func getElement(number: Int) -> Options?{
         switch number {
@@ -21,13 +19,9 @@ enum Options: String, CaseIterable {
         case 1:
             return .counter
         case 2:
-#if os(iOS)
             return .pdf
-#else
-            return nil
-#endif
         default:
-            return nil
+           return nil
         }
     }
 }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject var viewModel = ViewModel()
+    @StateObject var viewModel = WatchViewModel()
     var body: some View {
         NavigationView {
         ScrollView {
@@ -34,6 +34,9 @@ struct ContentView: View {
                     .environmentObject(viewModel)
             case .counter:
                 Counter()
+                    .environmentObject(viewModel)
+            case .pdf:
+                PDFView()
                     .environmentObject(viewModel)
             }
         } label: {

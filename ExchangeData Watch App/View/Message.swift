@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct Message: View {
-    @EnvironmentObject var viewModel: ViewModel
+    @EnvironmentObject var viewModel: WatchViewModel
     @Environment(\.colorScheme) var colorScheme
     var body: some View {
         ScrollView {
@@ -24,7 +24,7 @@ struct Message: View {
                 Text("Risposta\n\(viewModel.response)")
                 
                 Button {
-                    viewModel.sendMessage()
+                    viewModel.sendMessage(session: viewModel.session, message: viewModel.message)
                 } label: {
                     Text("Invia")
                         .foregroundColor(.white)
@@ -43,6 +43,6 @@ struct Message: View {
 struct Message_Previews: PreviewProvider {
     static var previews: some View {
         Message()
-            .environmentObject(ViewModel())
+            .environmentObject(WatchViewModel())
     }
 }

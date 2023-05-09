@@ -9,7 +9,7 @@ import SwiftUI
 
 struct Counter: View {
     
-    @EnvironmentObject var viewModel: ViewModel
+    @EnvironmentObject var viewModel: WatchViewModel
     @State var index: Int = 0
     @State var numberOfAument: Int = 1
     var body: some View {
@@ -40,7 +40,9 @@ struct Counter: View {
                         .fontWeight(.bold)
                         .onTapGesture {
                             index += numberOfAument
-                            viewModel.sendCounter(value: index, numberOfAument: numberOfAument)
+                            viewModel.contatore.number = index.description
+                            viewModel.sendCounter(session: viewModel.session,
+                                                  counter: viewModel.contatore)
                         }
                     
                     
@@ -60,14 +62,19 @@ struct Counter: View {
                         .onTapGesture {
                             guard index > 0, index - numberOfAument >= 0 else { return }
                             index -= numberOfAument
-                            viewModel.sendCounter(value: index, numberOfAument: numberOfAument)
+                            viewModel.contatore.number = index.description
+                            viewModel.sendCounter(session: viewModel.session,
+                                                  counter: viewModel.contatore)
                         }
                 }
                 
                 Button {
                     index = 0
                     numberOfAument = 1
-                    viewModel.sendCounter(value: index, numberOfAument: numberOfAument)
+                    viewModel.contatore.addendo = index.description
+                    viewModel.contatore.number = numberOfAument.description
+                    viewModel.sendCounter(session: viewModel.session,
+                                          counter: viewModel.contatore)
                 } label: {
                     Text("Reset")
                 }
@@ -81,11 +88,10 @@ struct Counter: View {
                 
             }
         }
-        .onChange(of: viewModel.response) { newValue in
-            let new = newValue.split(separator: ",")
-            guard !new.isEmpty, new.count == 2 else { return }
-            self.index = Int(new[0]) ?? 0
-            self.numberOfAument = Int(new[1]) ?? 0
+        .onChange(of: viewModel.contatore) { newValue in
+            print(newValue)
+            self.index = Int(newValue.number) ?? 0
+            self.numberOfAument = Int(newValue.addendo) ?? 0
         }
     }
 }
@@ -94,6 +100,6 @@ struct Counter: View {
 struct Counter_Previews: PreviewProvider {
     static var previews: some View {
         Counter()
-            .environmentObject(ViewModel())
+            .environmentObject(WatchViewModel())
     }
 }
