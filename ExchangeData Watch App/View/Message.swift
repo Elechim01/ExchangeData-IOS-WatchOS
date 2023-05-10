@@ -10,6 +10,9 @@ import SwiftUI
 struct Message: View {
     @EnvironmentObject var viewModel: WatchViewModel
     @Environment(\.colorScheme) var colorScheme
+    @State var messageError: String = ""
+    @State var showError: Bool = false
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 10) {
@@ -24,7 +27,11 @@ struct Message: View {
                 Text("Risposta\n\(viewModel.response)")
                 
                 Button {
-                    viewModel.sendMessage(session: viewModel.session, message: viewModel.message)
+                    viewModel.sendMessage(session: viewModel.session, message: viewModel.message) { error in
+                        messageError = error.localizedDescription
+                        showError.toggle()
+                        
+                    }
                 } label: {
                     Text("Invia")
                         .foregroundColor(.white)
@@ -35,6 +42,11 @@ struct Message: View {
                 .padding(.vertical,10)
                 
                 Spacer()
+            }
+        }
+        .alert("Errore:\n\(messageError)", isPresented: $showError) {
+            Button("Chiudi") {
+                showError.toggle()
             }
         }
     }

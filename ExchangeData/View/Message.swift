@@ -11,6 +11,8 @@ struct Message: View {
     @EnvironmentObject var viewModel: ViewModel
     @Environment(\.colorScheme) var colorScheme
     @State var typeSelected: TypeOfMessage = .normal
+    @State var messageError: String = ""
+    @State var showError: Bool = false
     var body: some View {
         VStack {
             HStack {
@@ -52,7 +54,10 @@ struct Message: View {
                 case .normal:
                     viewModel.sendMessage(
                         session: viewModel.session,
-                        message: viewModel.messaggio)
+                        message: viewModel.messaggio) { error in
+                            messageError = error.localizedDescription
+                            showError.toggle()
+                        }
                 case .shelve:
                     viewModel.sendMessageType1(
                         session: viewModel.session,
@@ -77,6 +82,11 @@ struct Message: View {
             .padding(.top,30)
 
             Spacer()
+        }
+        .alert("Errore:\n\(messageError)", isPresented: $showError) {
+            Button("Chiudi") {
+                showError.toggle()
+            }
         }
     }
     

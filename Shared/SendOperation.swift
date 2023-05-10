@@ -9,7 +9,7 @@ import Foundation
 import WatchConnectivity
 
 protocol SendOperation {
-    func sendMessage(session: WCSession?, message: String)
+    func sendMessage(session: WCSession?, message: String, errorResponse: ((ExchangeDataError)->())?)
     //    MARK: messaggi accantonati
         /// molteplici invi da parte di questo metdo saranno inviati sequenzialmente -> Ottimo sistema in caso di app di news
     func sendMessageType1(session: WCSession?, message: String)
@@ -20,14 +20,22 @@ protocol SendOperation {
 
 extension SendOperation {
     
-    func sendMessage(session: WCSession?, message: String) {
-        guard let session = session else { return }
+    func sendMessage(session: WCSession?, message: String, errorResponse: ((ExchangeDataError)->())?) {
+        guard let session = session else {
+            errorResponse?(ExchangeDataError.noSession)
+            return
+            
+        }
 //    MARK: controllo che sono connesso
-        guard session.isReachable else { return }
+        guard session.isReachable else {
+            errorResponse?(ExchangeDataError.notReachable)
+            return
+            
+        }
 //    MARK: send message
         let messageToSend = ["Messaggio" : message]
         session.sendMessage(messageToSend,replyHandler: nil){ error in
-            print("Error: \(error.localizedDescription)")
+            errorResponse?(ExchangeDataError.generic(description: error.localizedDescription))
         }
     }
     

@@ -45,3 +45,20 @@ enum TypeOfMessage: String, CaseIterable {
     }
     
 }
+
+enum ExchangeDataError: Error {
+    case generic(description: String)
+    case noSession
+    case notReachable
+    
+    var localizedDescription: String {
+        switch self {
+        case .generic(let description):
+            return description
+        case .noSession:
+            return "Errore interno"
+        case .notReachable:
+            return "Dispositivo non connesso riprova"
+        }
+    }
+}
