@@ -11,6 +11,8 @@ struct PDFSWIView: View {
     @EnvironmentObject var viewModel: ViewModel
     @State var showPDFPicker = false
     @State var url: URL?
+    @State var messageError: String = ""
+    @State var showError: Bool = false
     var body: some View {
         VStack{
             HStack {
@@ -28,7 +30,10 @@ struct PDFSWIView: View {
                 if let nUrl = url {
                     Button {
                         //                        UPload to Watch
-                        viewModel.sendFile(session: viewModel.session, file: nUrl)
+                        viewModel.sendFile(session: viewModel.session, file: nUrl) { error in
+                            messageError = error.localizedDescription
+                            showError.toggle()
+                        }
                         self.url = nil
                     } label: {
                         Image(systemName: "arrow.up.doc")
@@ -53,6 +58,11 @@ struct PDFSWIView: View {
         
         .sheet(isPresented: $showPDFPicker) {
             DocumentPicker(alert: $showPDFPicker, urlPath: $url)
+        }
+        .alert("Errore:\n\(messageError)", isPresented: $showError) {
+            Button("Chiudi") {
+                showError.toggle()
+            }
         }
         
         

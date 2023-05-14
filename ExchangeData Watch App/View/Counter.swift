@@ -12,6 +12,8 @@ struct Counter: View {
     @EnvironmentObject var viewModel: WatchViewModel
     @State var index: Int = 0
     @State var numberOfAument: Int = 1
+    @State var messageError: String = ""
+    @State var showError: Bool = false
     var body: some View {
         ScrollView {
             VStack (alignment: .center,spacing: 20){
@@ -42,7 +44,10 @@ struct Counter: View {
                             index += numberOfAument
                             viewModel.contatore.number = index.description
                             viewModel.sendCounter(session: viewModel.session,
-                                                  counter: viewModel.contatore)
+                                                  counter: viewModel.contatore) { error in
+                                messageError = error.localizedDescription
+                                showError.toggle()
+                            }
                         }
                     
                     
@@ -64,7 +69,10 @@ struct Counter: View {
                             index -= numberOfAument
                             viewModel.contatore.number = index.description
                             viewModel.sendCounter(session: viewModel.session,
-                                                  counter: viewModel.contatore)
+                                                  counter: viewModel.contatore)  { error in
+                                messageError = error.localizedDescription
+                                showError.toggle()
+                            }
                         }
                 }
                 
@@ -74,7 +82,10 @@ struct Counter: View {
                     viewModel.contatore.addendo = index.description
                     viewModel.contatore.number = numberOfAument.description
                     viewModel.sendCounter(session: viewModel.session,
-                                          counter: viewModel.contatore)
+                                          counter: viewModel.contatore) { error in
+                        messageError = error.localizedDescription
+                        showError.toggle()
+                    }
                 } label: {
                     Text("Reset")
                 }
@@ -92,6 +103,11 @@ struct Counter: View {
             print(newValue)
             self.index = Int(newValue.number) ?? 0
             self.numberOfAument = Int(newValue.addendo) ?? 0
+        }
+        .alert("Errore:\n\(messageError)", isPresented: $showError) {
+            Button("Chiudi") {
+                showError.toggle()
+            }
         }
     }
 }

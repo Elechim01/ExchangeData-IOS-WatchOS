@@ -11,6 +11,8 @@ struct PDFView: View {
     @EnvironmentObject var viewModel: WatchViewModel
     @State var showAlert: Bool = false
     @State var selectURL: URL?
+    @State var messageError: String = ""
+    @State var showError: Bool = false
     var body: some View {
         ScrollView {
             VStack {
@@ -40,12 +42,20 @@ struct PDFView: View {
         .alert("Vuoi inviare il seguente documento: \(selectURL?.lastPathComponent ?? "")", isPresented: $showAlert) {
             Button("Invia") {
                 guard let url = self.selectURL else { return }
-                viewModel.sendFile(session: viewModel.session, file: url)
+                viewModel.sendFile(session: viewModel.session, file: url) { error in
+                    messageError = error.localizedDescription
+                    showError.toggle()
+                }
             }
             .padding(.bottom)
             
             Button("Annulla") {
                 self.showAlert.toggle()
+            }
+        }
+        .alert("Errore:\n\(messageError)", isPresented: $showError) {
+            Button("Chiudi") {
+                showError.toggle()
             }
         }
     }

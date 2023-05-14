@@ -61,11 +61,17 @@ struct Message: View {
                 case .shelve:
                     viewModel.sendMessageType1(
                         session: viewModel.session,
-                        message: viewModel.messaggio)
+                        message: viewModel.messaggio)  { error in
+                            messageError = error.localizedDescription
+                            showError.toggle()
+                        }
                 case .background:
                     viewModel.sendMessageType2(
                         session: viewModel.session,
-                        message: viewModel.messaggio)
+                        message: viewModel.messaggio)  { error in
+                            messageError = error.localizedDescription
+                            showError.toggle()
+                        }
                 }
             } label: {
                 Text("Invia")

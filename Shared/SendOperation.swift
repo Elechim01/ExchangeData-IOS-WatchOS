@@ -12,10 +12,10 @@ protocol SendOperation {
     func sendMessage(session: WCSession?, message: String, errorResponse: ((ExchangeDataError)->())?)
     //    MARK: messaggi accantonati
         /// molteplici invi da parte di questo metdo saranno inviati sequenzialmente -> Ottimo sistema in caso di app di news
-    func sendMessageType1(session: WCSession?, message: String)
-    func sendMessageType2(session: WCSession?, message: String)
-    func sendFile(session: WCSession?,file: URL) -> WCSessionFileTransfer?
-    func sendCounter(session: WCSession?, counter: Contatore)
+    func sendMessageType1(session: WCSession?, message: String, errorResponse: ((ExchangeDataError) -> ())?)
+    func sendMessageType2(session: WCSession?, message: String, errorResponse: ((ExchangeDataError) -> ())?)  -> WCSessionUserInfoTransfer?
+    func sendFile(session: WCSession?, file: URL, errorResponse: ((ExchangeDataError) -> ())?) -> WCSessionFileTransfer?
+    func sendCounter(session: WCSession?, counter: Contatore, errorResponse: ((ExchangeDataError) -> ())?)
 }
 
 extension SendOperation {
@@ -39,50 +39,76 @@ extension SendOperation {
         }
     }
     
-    func sendMessageType1(session: WCSession?, message: String) {
-        guard let session = session else { return }
-        guard session.isReachable else { return }
+    func sendMessageType1(session: WCSession?, message: String, errorResponse: ((ExchangeDataError)->())?) {
+        guard let session = session else {
+            errorResponse?(ExchangeDataError.noSession)
+            return
+            
+        }
+        guard session.isReachable else {
+            errorResponse?(ExchangeDataError.notReachable)
+            return
+        }
         
         let messageToSend = ["Messaggio" : message]
         do {
             try session.updateApplicationContext(messageToSend)
         } catch let error {
             print(error.localizedDescription)
+            errorResponse?(ExchangeDataError.generic(description: error.localizedDescription))
         }
     }
     
-    func sendMessageType2(session: WCSession?, message: String) {
-        guard let session = session else { return }
-        guard session.isReachable else { return }
+    func sendMessageType2(session: WCSession?, message: String, errorResponse: ((ExchangeDataError) -> ())?) -> WCSessionUserInfoTransfer? {
+        guard let session = session else {
+            errorResponse?(ExchangeDataError.noSession)
+            return nil
+        }
+        guard session.isReachable else {
+            errorResponse?(ExchangeDataError.notReachable)
+            return nil
+        }
         let messageToSend = ["Messaggio" : message]
-        session.transferUserInfo(messageToSend)
-        print("Send")
+        return session.transferUserInfo(messageToSend)
     }
     
-    func sendFile(session: WCSession?,file: URL) -> WCSessionFileTransfer? {
-        guard let session = session else { return nil }
+    func sendFile(session: WCSession?,file: URL, errorResponse: ((ExchangeDataError) -> ())?) -> WCSessionFileTransfer? {
+        guard let session = session else {
+            errorResponse?(ExchangeDataError.noSession)
+            return nil
+            
+        }
         let fileManager = FileManager()
         
         print(fileManager.isReadableFile(atPath: file.path()))
-        guard session.isReachable else { return  nil}
+        guard session.isReachable else {
+            errorResponse?(ExchangeDataError.notReachable)
+            return  nil
+        }
         
-        let sendFile = session.transferFile(file, metadata: nil)
+      let transfer = session.transferFile(file, metadata: nil)
       
-        print(sendFile.isTransferring)
-        print("Total: \(sendFile.progress.totalUnitCount) / \(sendFile.progress.totalUnitCount) ")
-        return sendFile
+        print(transfer.isTransferring)
+        print("Total: \(transfer.progress.totalUnitCount) / \(transfer.progress.totalUnitCount) ")
+        return transfer
     }
     
-    func sendCounter(session: WCSession?, counter: Contatore) {
-        guard let session = session else { return }
-        guard session.isReachable else { return }
+    func sendCounter(session: WCSession?, counter: Contatore, errorResponse: ((ExchangeDataError) -> ())?) {
+        guard let session = session else {
+            errorResponse?(ExchangeDataError.noSession)
+            return
+        }
+        guard session.isReachable else {
+            errorResponse?(ExchangeDataError.notReachable)
+            return
+        }
         do {
-            var result = try JSONEncoder().encode(counter)
+            let result = try JSONEncoder().encode(counter)
             session.sendMessageData(result,replyHandler: nil){ error in
-                print("Error: \(error.localizedDescription)")
+                errorResponse?(ExchangeDataError.generic(description: error.localizedDescription))
             }
         } catch  {
-            print(error.localizedDescription)
+            errorResponse?(ExchangeDataError.generic(description: error.localizedDescription))
         }
     }
     

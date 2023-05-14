@@ -58,13 +58,6 @@ final class ViewModel: NSObject, ObservableObject, WCSessionDelegate, SendOperat
         }
     }
     
-    //    MARK: messaggi in background
-    func sendMessageType2() {
-        guard let session = self.session else { return }
-        sendMessageType2(session: session, message: messaggio)
-        
-    }
-    
     func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any] = [:]) {
         DispatchQueue.main.async {
             self.response = userInfo["Messaggio"] as? String ?? ""
